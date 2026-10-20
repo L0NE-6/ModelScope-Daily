@@ -1,0 +1,38 @@
+name: ModelScope Daily
+
+on:
+  # schedule:
+  #   - cron: "30 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ModelScope-Daily
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TZ: Asia/Shanghai
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Run ModelScope Daily
+        env:
+          MODELSCOPE_CN_TOKENS: ${{ secrets.MODELSCOPE_CN_TOKENS }}
+          MODELSCOPE_INTL_TOKENS: ${{ secrets.MODELSCOPE_INTL_TOKENS }}
+          MODELSCOPE_CN_TOKEN: ${{ secrets.MODELSCOPE_CN_TOKEN }}
+          MODELSCOPE_INTL_TOKEN: ${{ secrets.MODELSCOPE_INTL_TOKEN }}
+          MODELSCOPE_PROXY: ${{ secrets.MODELSCOPE_PROXY }}
+          PLUSPLUS_TOKEN: ${{ secrets.PLUSPLUS_TOKEN }}
+          BARK_URL: ${{ secrets.BARK_URL }}
+          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+          DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+        run: python modelscope_daily.py
