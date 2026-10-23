@@ -5,7 +5,7 @@
 ## 功能
 
 - 国内站与国际站分开配置、互不混用令牌。
-- 每日签到触发与账号身份回读。
+- 每日签到触发、国内站账单到账回读与账号身份回读。
 - 魔粒总额、可用、冻结余额。
 - 今日已用调用次数。
 - 多账号、代理、多通道推送。
@@ -25,6 +25,7 @@
 | `MODELSCOPE_CN_TOKEN` | 国内版单账号 |
 | `MODELSCOPE_INTL_TOKEN` | 国际版单账号 |
 | `MODELSCOPE_PROXY` | HTTP(S)/SOCKS 代理 |
+| `MODELSCOPE_VERIFY_DELAY` | 国内站账单回读间隔秒数，默认 `2` |
 | `MODELSCOPE_NO_NOTIFY=1` | 关闭推送 |
 
 示例：
@@ -71,7 +72,8 @@ pip3 install requests
 
 - 响应同时兼容 `Code/Success/Data/Message` 与 `code/success/data/msg`。
 - HTTP 401/403 表示令牌失效或站点不匹配。
-- 返回账号身份即视为签到触发成功；重复调用幂等。
+- 国内站会读取 `/openapi/v1/magicubes/transactions`，只有当日 `type=EARN` 且 `rule_key=daily_active / aliyun_bindlogin` 的账单存在时才确认到账；初次为空会在 `MODELSCOPE_VERIFY_DELAY` 秒后复查一次。
+- 国内站未查到到账记录时显示“未确认”，不会把登录接口成功冒充为签到成功；国际站没有账单协议，保持登录触发口径。
 - 余额接口失败会降级展示，不影响签到成功。
 
 ## 隐私

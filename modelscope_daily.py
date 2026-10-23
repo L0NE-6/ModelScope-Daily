@@ -12,6 +12,7 @@ ModelScope（魔搭）国内版 / 国际版每日签到
   MODELSCOPE_CN_TOKEN     国内版单账号
   MODELSCOPE_INTL_TOKEN   国际版单账号
   MODELSCOPE_PROXY        代理
+  MODELSCOPE_VERIFY_DELAY 国内站账单回读前的等待秒数（默认 2）
   MODELSCOPE_NO_NOTIFY=1  关闭推送
 
 命令：
@@ -54,7 +55,9 @@ REGIONS = {
 }
 LOGIN_INFO_PATH = "/api/v1/users/login/info"
 BALANCE_PATH = "/openapi/v1/magicubes/balance"
+TRANSACTIONS_PATH = "/openapi/v1/magicubes/transactions"
 RATE_LIMIT_PATH = "/api/v1/inference/rate-limit"
+DAILY_RULES = ("daily_active", "aliyun_bindlogin")
 
 
 class ModelScopeError(Exception):
@@ -125,6 +128,26 @@ def envelope_ok(payload):
         return False
 
 
+def today_cn():
+    """ModelScope 账单使用北京时间自然日，不依赖宿主机时区。"""
+    return time.strftime("%Y-%m-%d", time.gmtime(time.time() + 8 * 3600))
+
+
+def daily_records_for_day(records, day):
+    result = []
+    for record in records if isinstance(records, list) else []:
+        if not isinstance(record, dict):
+            continue
+        if str(record.get("type") or "").upper() != "EARN":
+            continue
+        if str(record.get("gmt_created") or "")[:10] != day:
+            continue
+        if str(record.get("rule_key") or "").lower() not in DAILY_RULES:
+            continue
+        result.append(record)
+    return result
+
+
 class ModelScopeClient:
     def __init__(self, region, account):
         self.region = region
@@ -185,7 +208,33 @@ class ModelScopeClient:
         except Exception:
             return None
 
+    def transactions(self):
+        payload = self.get(
+            TRANSACTIONS_PATH + "?page=1&page_size=50", "魔粒账单查询")
+        if not envelope_ok(payload):
+            raise ModelScopeError(
+                "魔粒账单查询失败：%s"
+                % (envelope_message(payload) or "上游返回失败"))
+        data = envelope_data(payload)
+        records = data.get("records")
+        if records is None:
+            return []
+        if not isinstance(records, list):
+            raise ModelScopeError("魔粒账单格式异常：records 不是列表")
+        return records
+
+    def daily_earn(self):
+        return daily_records_for_day(self.transactions(), today_cn())
+
     def run(self, query_only=False):
+        before = []
+        before_error = ""
+        if self.region == "cn":
+            try:
+                before = self.daily_earn()
+            except Exception as exc:
+                before_error = str(exc)[:120]
+
         payload = self.login_info()
         if not envelope_ok(payload):
             raise ModelScopeError(
@@ -196,10 +245,50 @@ class ModelScopeClient:
             identity, ("NickName", "Name", "nickname", "name", "HavanaId")
         )
         parts = []
-        if query_only:
+        confirmed = True
+        if self.region == "cn":
+            daily = list(before)
+            after_error = ""
+            if not daily:
+                try:
+                    daily = self.daily_earn()
+                    if not daily:
+                        try:
+                            delay = max(
+                                0, int(os.getenv("MODELSCOPE_VERIFY_DELAY", "2")))
+                        except ValueError:
+                            delay = 2
+                        if delay:
+                            time.sleep(delay)
+                        daily = self.daily_earn()
+                except Exception as exc:
+                    after_error = str(exc)[:120]
+            credit = sum(
+                float(record.get("total_amount") or 0)
+                for record in daily
+                if isinstance(record, dict)
+            )
+            if daily:
+                titles = [
+                    str(record.get("title") or record.get("rule_key") or "").strip()
+                    for record in daily if isinstance(record, dict)
+                ]
+                titles = [title for title in titles if title]
+                label = "今日已领取" if before else "签到到账"
+                parts.append("%s %s 魔粒%s" % (
+                    label, int(credit) if credit == int(credit) else credit,
+                    "（%s）" % " + ".join(titles) if titles else ""))
+            else:
+                confirmed = False
+                why = after_error or before_error
+                parts.append(
+                    "登录已触达，但今日未查到到账记录%s"
+                    % ("（账单查询失败：%s）" % why if why else
+                       "（账号可能不在活动范围）"))
+        elif query_only:
             parts.append("登录态有效")
         else:
-            parts.append("每日签到已触发")
+            parts.append("每日签到已触发（国际站无账单回读）")
         if display:
             parts.append(display)
         try:
@@ -212,7 +301,7 @@ class ModelScopeClient:
         used = self.used_today()
         if used is not None:
             parts.append("今日已用 %s 次" % used)
-        return "；".join(parts)
+        return confirmed, "；".join(parts)
 
 
 def post_json(url, payload):
@@ -283,9 +372,12 @@ def main():
         client = ModelScopeClient(region, account)
         label = "%s/%s" % (client.config["label"], client.name)
         try:
-            message = client.run(query_only=query_only)
-            succeeded += 1
-            line = "成功 %s：%s" % (label, message)
+            confirmed, message = client.run(query_only=query_only)
+            if confirmed:
+                succeeded += 1
+                line = "成功 %s：%s" % (label, message)
+            else:
+                line = "未确认 %s：%s" % (label, message)
         except Exception as exc:
             line = "失败 %s：%s" % (label, str(exc)[:240])
         lines.append(line)
