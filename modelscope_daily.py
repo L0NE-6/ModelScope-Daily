@@ -64,6 +64,14 @@ class ModelScopeError(Exception):
     pass
 
 
+class ModelScopeAuthError(ModelScopeError):
+    """HTTP 401：令牌失效或站点不匹配。"""
+
+
+class ModelScopeRiskControlError(ModelScopeError):
+    """HTTP 403：魔搭风控拦截，不等同于登录失效。"""
+
+
 def log(message):
     print(str(message), flush=True)
 
@@ -101,11 +109,17 @@ def parse_accounts(env_name, single_env):
 
 
 def envelope_data(payload):
-    value = payload.get("Data", payload.get("data"))
+    if not isinstance(payload, dict):
+        return {}
+    value = payload.get("Data")
+    if not isinstance(value, dict):
+        value = payload.get("data")
     return value if isinstance(value, dict) else {}
 
 
 def envelope_message(payload):
+    if not isinstance(payload, dict):
+        return ""
     return str(
         payload.get("Message")
         or payload.get("message")
@@ -115,13 +129,16 @@ def envelope_message(payload):
 
 
 def envelope_ok(payload):
+    if not isinstance(payload, dict):
+        return False
     if "Success" in payload and isinstance(payload.get("Success"), bool):
         return payload["Success"]
     if "success" in payload and isinstance(payload.get("success"), bool):
         return payload["success"]
     code = payload.get("Code", payload.get("code"))
     if code is None:
-        return True
+        # 没有 ModelScope 信封（例如代理错误页、空响应）不能当成成功。
+        return False
     try:
         return int(code) == 200
     except Exception:
@@ -173,10 +190,15 @@ class ModelScopeClient:
             payload = response.json()
         except Exception:
             payload = {}
-        if response.status_code in (401, 403):
-            raise ModelScopeError(
-                "%s：令牌失效或不属于%s站点（HTTP %s）"
-                % (what, self.config["label"], response.status_code)
+        if response.status_code == 401:
+            raise ModelScopeAuthError(
+                "%s：令牌失效或不属于%s站点（HTTP 401）"
+                % (what, self.config["label"])
+            )
+        if response.status_code == 403:
+            raise ModelScopeRiskControlError(
+                "%s：被魔搭风控拒绝（HTTP 403），并非登录失效"
+                % what
             )
         if response.status_code < 200 or response.status_code >= 300:
             raise ModelScopeError("%s失败 HTTP %s" % (what, response.status_code))
@@ -191,9 +213,16 @@ class ModelScopeClient:
             raise ModelScopeError(
                 "魔粒余额查询失败：%s" % (envelope_message(payload) or "上游返回失败")
             )
-        data = envelope_data(payload)
+        data = payload.get("Data")
+        if not isinstance(data, dict):
+            data = payload.get("data")
+        if not isinstance(data, dict):
+            raise ModelScopeError("魔粒余额查询失败：响应缺少 data")
+        available = data.get("available_balance")
+        if available is None:
+            raise ModelScopeError("魔粒余额查询失败：响应缺少 available_balance")
         return {
-            "available": data.get("available_balance", 0),
+            "available": available,
             "total": data.get("total_balance"),
             "frozen": data.get("frozen_amount", 0),
         }

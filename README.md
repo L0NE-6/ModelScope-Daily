@@ -1,5 +1,7 @@
 # ModelScope 国内版 / 国际版每日签到
 
+> 当前版本：**v1.0.2**（2026-10-27）
+
 单文件 Python 青龙脚本。ModelScope 没有独立签到按钮接口，调用一次登录信息接口就会触发当日魔粒签到。
 
 ## 功能
@@ -71,7 +73,8 @@ pip3 install requests
 ## 判定规则
 
 - 响应同时兼容 `Code/Success/Data/Message` 与 `code/success/data/msg`。
-- HTTP 401/403 表示令牌失效或站点不匹配。
+- HTTP `401` 表示令牌失效或站点不匹配；HTTP `403` 是魔搭风控拦截，不等同于登录失效。
+- 余额响应必须包含 `data` 与 `available_balance`；缺少字段或没有 ModelScope 响应信封时按查询失败处理，不会显示成 0 余额。
 - 国内站会读取 `/openapi/v1/magicubes/transactions`，只有当日 `type=EARN` 且 `rule_key=daily_active / aliyun_bindlogin` 的账单存在时才确认到账；初次为空会在 `MODELSCOPE_VERIFY_DELAY` 秒后复查一次。
 - 国内站未查到到账记录时显示“未确认”，不会把登录接口成功冒充为签到成功；国际站没有账单协议，保持登录触发口径。
 - 余额接口失败会降级展示，不影响签到成功。

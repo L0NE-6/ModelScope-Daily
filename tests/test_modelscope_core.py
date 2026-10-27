@@ -2,12 +2,22 @@ import importlib.util
 import os
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 SOURCE_PATH = Path(__file__).resolve().parents[1] / "modelscope_daily.py"
 SPEC = importlib.util.spec_from_file_location("modelscope_daily", SOURCE_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
+
+
+class FakeResponse:
+    def __init__(self, status_code, payload):
+        self.status_code = status_code
+        self.payload = payload
+
+    def json(self):
+        return self.payload
 
 
 class StubClient(MODULE.ModelScopeClient):
@@ -88,6 +98,67 @@ class ModelScopeCoreTests(unittest.TestCase):
         confirmed, message = client.run()
         self.assertTrue(confirmed)
         self.assertIn("国际站无账单回读", message)
+
+    def test_http_401_is_auth_failure(self):
+        client = MODULE.ModelScopeClient("cn", {"name": "测试账号", "token": "ms-test"})
+        with patch.object(client.session, "get", return_value=FakeResponse(401, {})):
+            with self.assertRaises(MODULE.ModelScopeAuthError) as caught:
+                client.get("/api/v1/users/login/info", "每日签到")
+        self.assertIn("HTTP 401", str(caught.exception))
+        self.assertIn("令牌失效", str(caught.exception))
+
+    def test_http_403_is_risk_control_not_login_death(self):
+        client = MODULE.ModelScopeClient("cn", {"name": "测试账号", "token": "ms-test"})
+        with patch.object(client.session, "get", return_value=FakeResponse(403, {})):
+            with self.assertRaises(MODULE.ModelScopeRiskControlError) as caught:
+                client.get("/api/v1/users/login/info", "每日签到")
+        message = str(caught.exception)
+        self.assertIn("HTTP 403", message)
+        self.assertIn("风控", message)
+        self.assertNotIn("令牌失效", message)
+
+    def test_balance_missing_data_is_an_error_not_zero(self):
+        client = MODULE.ModelScopeClient("cn", {"name": "测试账号", "token": "ms-test"})
+        with patch.object(client, "get", return_value={"success": True}):
+            with self.assertRaises(MODULE.ModelScopeError) as caught:
+                client.balance()
+        self.assertIn("缺少 data", str(caught.exception))
+
+    def test_balance_non_envelope_is_an_error(self):
+        client = MODULE.ModelScopeClient("cn", {"name": "测试账号", "token": "ms-test"})
+        with patch.object(client, "get", return_value={"unexpected": "proxy page"}):
+            with self.assertRaises(MODULE.ModelScopeError) as caught:
+                client.balance()
+        self.assertIn("上游返回失败", str(caught.exception))
+
+    def test_balance_non_dict_json_is_an_error(self):
+        client = MODULE.ModelScopeClient("cn", {"name": "测试账号", "token": "ms-test"})
+        with patch.object(client, "get", return_value=[]):
+            with self.assertRaises(MODULE.ModelScopeError) as caught:
+                client.balance()
+        self.assertIn("上游返回失败", str(caught.exception))
+
+    def test_balance_zero_is_still_a_valid_balance(self):
+        client = MODULE.ModelScopeClient("cn", {"name": "测试账号", "token": "ms-test"})
+        with patch.object(client, "get", return_value={
+            "success": True,
+            "data": {"available_balance": 0, "total_balance": 0, "frozen_amount": 0},
+        }):
+            wallet = client.balance()
+        self.assertEqual(0, wallet["available"])
+        self.assertEqual(0, wallet["total"])
+
+    def test_transactions_readback_is_preserved(self):
+        records = [
+            {"type": "EARN", "gmt_created": "2026-10-27 09:00:00",
+             "rule_key": "daily_active", "total_amount": 200},
+        ]
+        client = MODULE.ModelScopeClient("cn", {"name": "测试账号", "token": "ms-test"})
+        with patch.object(client, "get", return_value={
+            "success": True,
+            "data": {"records": records},
+        }):
+            self.assertEqual(records, client.transactions())
 
 
 if __name__ == "__main__":
