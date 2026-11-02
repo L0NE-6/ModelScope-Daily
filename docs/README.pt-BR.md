@@ -141,6 +141,10 @@ A versão atual é `v1.0.2`. Ela separa `401` e `403` e falha em vez de mostrar 
 - Guarde tokens apenas em variáveis locais, GitHub Secrets ou variáveis do Qinglong.
 - Remova tokens, apelidos, IDs e detalhes do livro antes de abrir uma issue.
 
+## Limites de uso e redistribuição
+
+O repositório oficial, os scripts, as instruções de implantação e os downloads das Releases são gratuitos. Não são permitidos empacotamento pago, implantação paga, exigência de assinatura, revenda, remoção de autoria, personificação do autor, uso da identidade ou dos QR codes do autor como endosso, nem repostagem em contas, grupos ou canais sem relação para desviar tráfego. O conteúdo irregular pode ser retirado; o autor pode pausar atualizações, arquivar ou excluir o repositório. Consulte [../NOTICE.md](../NOTICE.md) para as regras completas.
+
 ## 🔗 Links
 
 - [Releases](https://github.com/L0NE-6/ModelScope-Daily/releases)

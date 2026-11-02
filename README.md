@@ -16,7 +16,7 @@
 <img src="https://img.shields.io/github/license/L0NE-6/ModelScope-Daily?style=for-the-badge&label=License&color=F472B6" alt="License" />
 <a href="https://github.com/L0NE-6/ModelScope-Daily/releases"><img src="https://img.shields.io/badge/%E2%AC%87%20Releases-%E4%B8%8B%E8%BD%BD-2ea44f?style=for-the-badge&logo=github&logoColor=white" alt="Releases Download" /></a>
 
-[✨ 30 秒速览](#-30-秒速览) · [🚀 快速开始](#-快速开始) · [🐧 青龙部署](#-青龙部署) · [☁️ GitHub Actions](#-github-actions) · [🔧 环境变量](#-环境变量) · [❓ 常见问题](#-常见问题) · [✦ 星轨](#-星轨-star-trail)
+[✨ 30 秒速览](#-30-秒速览) · [🚀 快速开始](#-快速开始) · [🐧 青龙部署](#-青龙部署) · [☁️ GitHub Actions](#-github-actions) · [🔧 环境变量](#-环境变量) · [❓ 常见问题](#-常见问题) · [🚫 使用边界](#usage-policy) · [✦ 星轨](#-星轨-star-trail)
 
 </div>
 
@@ -222,6 +222,17 @@ ModelScope 的登录信息接口本身触发签到，本项目没有可绕开签
 - 只把令牌放在本地环境变量、GitHub Secrets 或青龙环境变量中；
 - 不要提交魔粒账单截图、完整昵称或账号 ID 到公开 Issue。
 
+<a id="usage-policy"></a>
+## 🚫 使用边界与转载声明
+
+本项目仓库、脚本、部署说明和 Release 下载始终免费公开。未经作者明确书面许可，禁止将本项目包装为付费资源、内部版、独家版、会员权益、收费课程、付费部署或包更新服务；禁止搬运到其他账号、群组、频道、网盘、电商或付费平台进行涨粉、截流、倒卖和引流；禁止删除作者与版权信息后冒充原创；禁止使用作者昵称、头像、二维码和项目名称制造官方授权假象。
+
+> 如需商业合作、品牌授权、联合分发或使用作者名义提供付费服务，请先取得作者明确书面授权。完整规则、收款码防诈骗说明和违规处理方式见 **[NOTICE.md](NOTICE.md)**。
+
+> 官方仓库和 Release 始终免费。第三方以“下载费 / 激活费 / 内部版 / 代部署 / 会员门槛”等名义收费，均与作者无关，请停止付款并保留证据。
+
+> 对上述违规行为，作者有权要求立即停止传播、删除内容并下架相关商品或页面；并可视情况暂停更新、归档或删除本仓库及相关 Release、向平台投诉或采取进一步必要措施。
+
 ## ☕ 支持与反馈
 
 脚本免费使用，不含账号数据。如果它对你有帮助，可以自愿扫码支持：
@@ -231,6 +242,8 @@ ModelScope 的登录信息接口本身触发签到，本项目没有可绕开签
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="assets/donate-alipay.jpg" width="260" alt="支付宝收款码" />
 </p>
+
+> ⚠️ 收款码仅用于向作者自愿赞赏。任何第三方以代下载、代部署、内部资源或会员群为由收费，均与作者无关，请停止付款并保留证据。
 
 反馈问题时请删除令牌、昵称、账号 ID 和账单明细，再通过 [Issues](https://github.com/L0NE-6/ModelScope-Daily/issues) 提交；版本变化见 [Releases](https://github.com/L0NE-6/ModelScope-Daily/releases)。
 
