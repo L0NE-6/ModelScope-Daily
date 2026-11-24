@@ -4,28 +4,30 @@
 
 # 🌐 ModelScope Daily
 
-**ModelScope 国内版 / 国际版每日签到单文件脚本，分开管理令牌、回读魔粒余额与调用额度。**
+**ModelScope 国内版 / 国际版每日签到单文件脚本，分开管理令牌、回读魔粒余额与调用额度**
 
-> 当前版本：**v1.0.3**（2026-11-05） · 最新更新：文档与使用边界同步，保留国内版/国际版双站隔离
+> 当前版本：**v1.0.3**（2026-11-05） · 认证方式：国内版 / 国际版 Token
 
-[简体中文](README.md) | [English](docs/README.en.md) | [繁體中文](docs/README.zh-Hant.md) | [日本語](docs/README.ja.md) | [한국어](docs/README.ko.md) | [Português (BR)](docs/README.pt-BR.md)
+**[简体中文](README.md)** · [English](docs/README.en.md) · [繁體中文](docs/README.zh-Hant.md) · [日本語](docs/README.ja.md) · [한국어](docs/README.ko.md) · [Português (BR)](docs/README.pt-BR.md)
 
-<a href="https://github.com/L0NE-6/ModelScope-Daily/releases"><img src="https://img.shields.io/github/v/release/L0NE-6/ModelScope-Daily?style=for-the-badge&label=Release&color=2ea44f&logo=github" alt="Release" /></a>
+双站隔离 · 多账号 · 每日签到 · 魔粒余额 · 调用额度 · 青龙 · Actions
+
+<img src="https://img.shields.io/badge/Version-v1.0.3-2ea44f?style=for-the-badge&logo=github" alt="Version v1.0.3" />
 <img src="https://img.shields.io/github/stars/L0NE-6/ModelScope-Daily?style=for-the-badge&label=Stars&color=FFC75F&logo=github" alt="Stars" />
-<img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-<img src="https://img.shields.io/badge/%E9%9D%92%E9%BE%99-Ready-4EAA25?style=for-the-badge" alt="Qinglong" />
-<a href="https://github.com/L0NE-6/ModelScope-Daily/actions/workflows/daily.yml"><img src="https://img.shields.io/github/actions/workflow/status/L0NE-6/ModelScope-Daily/daily.yml?branch=main&style=for-the-badge&label=Actions&logo=githubactions&logoColor=white" alt="GitHub Actions" /></a>
-<img src="https://img.shields.io/github/license/L0NE-6/ModelScope-Daily?style=for-the-badge&label=License&color=F472B6" alt="License" />
-<a href="https://github.com/L0NE-6/ModelScope-Daily/releases"><img src="https://img.shields.io/badge/%E2%AC%87%20Releases-%E4%B8%8B%E8%BD%BD-2ea44f?style=for-the-badge&logo=github&logoColor=white" alt="Releases Download" /></a>
+<img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11" />
+<img src="https://img.shields.io/badge/Qinglong-ready-4EAA25?style=for-the-badge" alt="Qinglong" />
+<img src="https://img.shields.io/badge/GitHub%20Actions-supported-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" />
 
-[✨ 30 秒速览](#-30-秒速览) · [🚀 快速开始](#-快速开始) · [🐧 青龙部署](#-青龙部署) · [☁️ GitHub Actions](#-github-actions) · [🔧 环境变量](#-环境变量) · [❓ 常见问题](#-常见问题) · [🚫 使用边界](#usage-policy) · [✦ 星轨](#-星轨-star-trail)
+[边界](#policy) · [速览](#overview) · [协议](#protocol) · [凭据](#credentials) · [快速开始](#quickstart) · [青龙](#qinglong) · [Actions](#actions) · [CLI](#cli) · [结果码](#result-codes) · [成功判据](#success) · [测试](#tests) · [目录](#layout) · [版本](#release) · [赞赏](#donate) · [反馈](#feedback)
 
 </div>
 
 ---
 
-<a id="usage-policy"></a>
-## 🚫 使用边界与转载声明
+<a id="policy"></a>
+## 🚫 使用边界
+
+### 🚫 使用边界与转载声明
 
 > [!IMPORTANT]
 > **官方版本永久免费。** 未经作者书面许可，禁止付费包装、搬运引流、冒充作者，或使用作者身份与二维码制造官方授权假象。违规内容可能被要求下架；作者可暂停更新、归档或删除仓库及相关 Release。
@@ -40,7 +42,12 @@
 
 ---
 
+---
+
+<a id="overview"></a>
 ## ✨ 30 秒速览
+
+### ✨ 30 秒速览
 
 | 维度 | 说明 |
 | :--- | :--- |
@@ -58,9 +65,27 @@
 - 国内站读取 `/openapi/v1/magicubes/transactions` 确认当日到账。
 - 汇总 `daily_active` / `aliyun_bindlogin` 两类魔粒收入。
 - 回读魔粒总额、可用、冻结余额和今日已用调用次数。
-- 兼容大小写两套上游响应信封，区分 `401` 登录失效与 `403` 风控。
+- 兼容大小写两套服务端响应信封，区分 `401` 登录失效与 `403` 风控。
 
-## 🧭 签到机制
+---
+
+<a id="what"></a>
+## 🧭 这是什么
+
+---
+
+<a id="protocol"></a>
+## 🔁 协议与回读
+
+### 区域与账号隔离
+
+国内版与国际版分别读取独立令牌变量，脚本不会把一个区域的登录态发送到另一个区域。
+
+### 验收字段
+
+签到结果以服务端业务信封、余额或额度回读为准。`401` 表示登录失效，`403` 表示风控或权限边界，均不能被 HTTP 200 包装成成功。
+
+### 🧭 签到机制
 
 ModelScope 没有独立的“签到按钮”接口。调用一次登录信息接口就会触发当日魔粒签到，重复调用保持幂等。
 
@@ -75,7 +100,27 @@ ms- token
 
 > `--query` 同样会调用登录信息接口，因此也会触发签到。该接口本身就是签到机制，不存在完全只读的本地查询方式。
 
+---
+
+<a id="credentials"></a>
+## 🔑 凭据与账号
+
+| 变量 | 必需 | 说明 |
+| :--- | :---: | :--- |
+| `MODELSCOPE_CN_TOKENS` | 区域二选一 | 国内版多账号令牌 |
+| `MODELSCOPE_INTL_TOKENS` | 区域二选一 | 国际版多账号令牌 |
+| `MODELSCOPE_CN_TOKEN` | 区域二选一 | 国内版单账号令牌 |
+| `MODELSCOPE_INTL_TOKEN` | 区域二选一 | 国际版单账号令牌 |
+| `MODELSCOPE_PROXY` | 否 | HTTP / HTTPS 代理 |
+
+令牌属于密码级凭据，不要写入 README、日志、Issue 或公开 Actions 输出。
+
+---
+
+<a id="quickstart"></a>
 ## 🚀 快速开始
+
+### 🚀 快速开始
 
 **1. 安装依赖**
 
@@ -116,97 +161,7 @@ python modelscope_daily.py
 python modelscope_daily.py --only 1
 python modelscope_daily.py --no-notify
 ```
-
-## ⌨️ 命令行
-
-| 命令 | 作用 |
-| :--- | :--- |
-| `python modelscope_daily.py` | 触发签到并回读到账、余额与用量 |
-| `python modelscope_daily.py --only 1` | 只处理按国内站、国际站顺序展开后的第 1 个账号 |
-| `python modelscope_daily.py --query` | 保留参数，但仍会触发登录信息接口 |
-| `python modelscope_daily.py --no-notify` | 本轮不发送通知 |
-
-退出码：`0` 表示至少一个账号确认成功；`1` 表示没有配置账号、指定账号不存在，或所有账号都失败 / 未确认。
-
-## 🐧 青龙部署
-
-```bash
-pip3 install requests
-```
-
-在青龙环境变量中填写 `MODELSCOPE_CN_TOKENS` 和/或 `MODELSCOPE_INTL_TOKENS`，再创建任务：
-
-```text
-30 8 * * * python3 modelscope_daily.py
-```
-
-建议首次运行先保留 `--only`，逐个确认站点令牌与账号状态。脚本不会写账号令牌到仓库；运行日志只输出脱敏身份信息。
-
-## ☁️ GitHub Actions
-
-工作流位于 [`.github/workflows/daily.yml`](.github/workflows/daily.yml)。**默认只有手动触发**，定时段目前被注释。
-
-在仓库 Secrets 中配置：
-
-| Secret | 必填 | 说明 |
-| :--- | :---: | :--- |
-| `MODELSCOPE_CN_TOKENS` | 二选一 | 国内站多账号令牌 |
-| `MODELSCOPE_INTL_TOKENS` | 二选一 | 国际站多账号令牌 |
-| `MODELSCOPE_CN_TOKEN` | 二选一 | 国内站单账号令牌 |
-| `MODELSCOPE_INTL_TOKEN` | 二选一 | 国际站单账号令牌 |
-| `MODELSCOPE_PROXY` | 否 | HTTP(S) / SOCKS 代理 |
-| `PLUSPLUS_TOKEN` | 否 | PushPlus 推送令牌 |
-| `BARK_URL` | 否 | Bark 推送地址 |
-| `WECOM_WEBHOOK` | 否 | 企业微信机器人 webhook |
-| `DINGTALK_WEBHOOK` | 否 | 钉钉机器人 webhook |
-
-需要定时运行时，取消 workflow 中 schedule 两行的注释。示例 `30 0 * * *` 使用 UTC，对应北京时间 08:30。
-
-工作流没有默认透传 `MODELSCOPE_VERIFY_DELAY` 和 `MODELSCOPE_NO_NOTIFY`；可以在本地 / 青龙中使用，或自行在 workflow 中显式添加映射。
-
-## 🔧 环境变量
-
-### 账号
-
-| 变量 | 必填 | 说明 |
-| :--- | :---: | :--- |
-| `MODELSCOPE_CN_TOKENS` | 多账号 | 国内版，每行 `备注\|ms-token` |
-| `MODELSCOPE_INTL_TOKENS` | 多账号 | 国际版，每行 `备注\|ms-token` |
-| `MODELSCOPE_CN_TOKEN` | 单账号 | 国内版单账号令牌 |
-| `MODELSCOPE_INTL_TOKEN` | 单账号 | 国际版单账号令牌 |
-
-### 运行与通知
-
-| 变量 | 说明 |
-| :--- | :--- |
-| `MODELSCOPE_PROXY` | HTTP(S) / SOCKS 代理 |
-| `MODELSCOPE_VERIFY_DELAY` | 国内站账单回读间隔秒数，默认 `2` |
-| `MODELSCOPE_NO_NOTIFY` | 设为 `1` 时关闭推送 |
-| `PLUSPLUS_TOKEN` | PushPlus 令牌 |
-| `BARK_URL` | Bark 服务地址 |
-| `WECOM_WEBHOOK` | 企业微信机器人 webhook，或仅填 key |
-| `QYWX_TOKEN` | 企业微信 key 的兼容变量名 |
-| `DINGTALK_WEBHOOK` | 钉钉机器人 webhook |
-
-## 📊 判定规则
-
-| 场景 | 判定 |
-| :--- | :--- |
-| HTTP `401` | 令牌失效或站点不匹配 |
-| HTTP `403` | 魔搭风控拦截，不等同于登录失效 |
-| 响应信封 | 同时兼容 `Code/Success/Data/Message` 与 `code/success/data/msg` |
-| 余额字段缺失 | 按查询失败处理，不显示成 0 余额 |
-| 国内站到账 | 必须是北京时间当日、`type=EARN` 且 `rule_key=daily_active / aliyun_bindlogin` |
-| 初次账单为空 | 默认等待 `MODELSCOPE_VERIFY_DELAY` 秒后复查一次 |
-| 国际站 | 没有独立按钮接口，按登录触发口径报告 |
-
-国内站未查到到账记录时显示“未确认”，不会把登录接口成功冒充为签到成功。余额接口失败会降级展示，不影响已经确认的签到结果。
-
-## 📦 版本说明
-
-当前发布版为 `v1.0.2`。该版本修复了 `401/403` 混淆和余额字段缺失误显示为 0 的问题。CHANGELOG 记录本轮新增 7 项离线回归、共 11 项测试通过；同时明确说明该轮没有使用真实账号发送真实签到请求。
-
-## ❓ 常见问题
+### ❓ 常见问题
 
 <details>
 <summary><b>为什么 --query 也会签到？</b></summary>
@@ -232,7 +187,156 @@ ModelScope 的登录信息接口本身触发签到，本项目没有可绕开签
 不可以。两个站点的网页登录态不通用，必须分别配置。
 </details>
 
-## 🔒 隐私说明
+---
+
+<a id="qinglong"></a>
+## 🐧 青龙面板
+
+### 🐧 青龙部署
+
+```bash
+pip3 install requests
+```
+
+在青龙环境变量中填写 `MODELSCOPE_CN_TOKENS` 和/或 `MODELSCOPE_INTL_TOKENS`，再创建任务：
+
+```text
+30 8 * * * python3 modelscope_daily.py
+```
+
+建议首次运行先保留 `--only`，逐个确认站点令牌与账号状态。脚本不会写账号令牌到仓库；运行日志只输出脱敏身份信息。
+
+---
+
+<a id="actions"></a>
+## ☁️ GitHub Actions
+
+### ☁️ GitHub Actions
+
+工作流位于 [`.github/workflows/daily.yml`](.github/workflows/daily.yml)。**默认只有手动触发**，定时段目前被注释。
+
+在仓库 Secrets 中配置：
+
+| Secret | 必填 | 说明 |
+| :--- | :---: | :--- |
+| `MODELSCOPE_CN_TOKENS` | 二选一 | 国内站多账号令牌 |
+| `MODELSCOPE_INTL_TOKENS` | 二选一 | 国际站多账号令牌 |
+| `MODELSCOPE_CN_TOKEN` | 二选一 | 国内站单账号令牌 |
+| `MODELSCOPE_INTL_TOKEN` | 二选一 | 国际站单账号令牌 |
+| `MODELSCOPE_PROXY` | 否 | HTTP(S) / SOCKS 代理 |
+| `PLUSPLUS_TOKEN` | 否 | PushPlus 推送令牌 |
+| `BARK_URL` | 否 | Bark 推送地址 |
+| `WECOM_WEBHOOK` | 否 | 企业微信机器人 webhook |
+| `DINGTALK_WEBHOOK` | 否 | 钉钉机器人 webhook |
+
+需要定时运行时，取消 workflow 中 schedule 两行的注释。示例 `30 0 * * *` 使用 UTC，对应北京时间 08:30。
+
+工作流没有默认透传 `MODELSCOPE_VERIFY_DELAY` 和 `MODELSCOPE_NO_NOTIFY`；可以在本地 / 青龙中使用，或自行在 workflow 中显式添加映射。
+
+---
+
+<a id="cli"></a>
+## ⌨️ CLI 与环境变量
+
+### ⌨️ 命令行
+
+| 命令 | 作用 |
+| :--- | :--- |
+| `python modelscope_daily.py` | 触发签到并回读到账、余额与用量 |
+| `python modelscope_daily.py --only 1` | 只处理按国内站、国际站顺序展开后的第 1 个账号 |
+| `python modelscope_daily.py --query` | 保留参数，但仍会触发登录信息接口 |
+| `python modelscope_daily.py --no-notify` | 本轮不发送通知 |
+
+退出码：`0` 表示至少一个账号确认成功；`1` 表示没有配置账号、指定账号不存在，或所有账号都失败 / 未确认。
+### 🔧 环境变量
+
+#### 账号
+
+| 变量 | 必填 | 说明 |
+| :--- | :---: | :--- |
+| `MODELSCOPE_CN_TOKENS` | 多账号 | 国内版，每行 `备注\|ms-token` |
+| `MODELSCOPE_INTL_TOKENS` | 多账号 | 国际版，每行 `备注\|ms-token` |
+| `MODELSCOPE_CN_TOKEN` | 单账号 | 国内版单账号令牌 |
+| `MODELSCOPE_INTL_TOKEN` | 单账号 | 国际版单账号令牌 |
+
+#### 运行与通知
+
+| 变量 | 说明 |
+| :--- | :--- |
+| `MODELSCOPE_PROXY` | HTTP(S) / SOCKS 代理 |
+| `MODELSCOPE_VERIFY_DELAY` | 国内站账单回读间隔秒数，默认 `2` |
+| `MODELSCOPE_NO_NOTIFY` | 设为 `1` 时关闭推送 |
+| `PLUSPLUS_TOKEN` | PushPlus 令牌 |
+| `BARK_URL` | Bark 服务地址 |
+| `WECOM_WEBHOOK` | 企业微信机器人 webhook，或仅填 key |
+| `QYWX_TOKEN` | 企业微信 key 的兼容变量名 |
+| `DINGTALK_WEBHOOK` | 钉钉机器人 webhook |
+
+---
+
+<a id="result-codes"></a>
+## 🚦 结果码
+
+| 状态 | 含义 |
+| :--- | :--- |
+| 业务成功 | 签到信封有效，且余额或额度可回读 |
+| `401` | 登录态失效，需要更新对应区域令牌 |
+| `403` | 风控、区域或权限限制 |
+| 契约异常 | HTTP 成功但缺少必需业务字段 |
+| 网络失败 | 请求未完成，结果保留为失败 |
+
+### 📊 判定规则
+
+| 场景 | 判定 |
+| :--- | :--- |
+| HTTP `401` | 令牌失效或站点不匹配 |
+| HTTP `403` | 魔搭风控拦截，不等同于登录失效 |
+| 响应信封 | 同时兼容 `Code/Success/Data/Message` 与 `code/success/data/msg` |
+| 余额字段缺失 | 按查询失败处理，不显示成 0 余额 |
+| 国内站到账 | 必须是北京时间当日、`type=EARN` 且 `rule_key=daily_active / aliyun_bindlogin` |
+| 初次账单为空 | 默认等待 `MODELSCOPE_VERIFY_DELAY` 秒后复查一次 |
+| 国际站 | 没有独立按钮接口，按登录触发口径报告 |
+
+国内站未查到到账记录时显示“未确认”，不会把登录接口成功冒充为签到成功。余额接口失败会降级展示，不影响已经确认的签到结果。
+
+---
+
+<a id="success"></a>
+## ✅ 成功判据
+
+成功必须同时满足：区域正确、业务信封有效、签到动作完成，并且服务端余额或额度可回读。
+
+---
+
+<a id="tests"></a>
+## 🧪 测试
+
+```powershell
+$env:PYTHONUTF8 = "1"
+python -m unittest discover -s tests -v
+python -m py_compile modelscope_daily.py
+```
+
+测试覆盖核心解析与回归分支；真实账号到账仍需以服务端余额回读为准。
+
+---
+
+<a id="design"></a>
+## 🧱 设计原则
+
+- 国内版与国际版硬隔离，不做跨区域令牌混用。
+- 单文件、多账号、逐账号错误归因。
+- 业务字段与余额回读优先于 HTTP 状态码。
+- 代理与推送均为可选，不改变主签到流程。
+
+---
+
+<a id="privacy"></a>
+## 🔒 隐私与安全
+
+凭据、状态文件、日志与运行缓存都属于账号级数据。仓库和 Issue 中只保留脱敏片段。
+
+### 🔒 隐私说明
 
 - 不收集、不上传账号数据；
 - 日志不输出完整 `ms-` 令牌；
@@ -240,32 +344,73 @@ ModelScope 的登录信息接口本身触发签到，本项目没有可绕开签
 - 只把令牌放在本地环境变量、GitHub Secrets 或青龙环境变量中；
 - 不要提交魔粒账单截图、完整昵称或账号 ID 到公开 Issue。
 
-## ☕ 支持与反馈
+---
 
-脚本免费使用，不含账号数据。如果它对你有帮助，可以自愿扫码支持：
+<a id="layout"></a>
+## 📁 目录结构
 
-<p align="center">
-  <img src="assets/donate-wechat.png" width="260" alt="微信赞赏码" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/donate-alipay.jpg" width="260" alt="支付宝收款码" />
-</p>
+```text
+ModelScope-Daily/
+├── .github/workflows/
+├── assets/
+├── docs/
+├── tests/
+├── CHANGELOG.md
+├── README.md
+└── 运行脚本
+```
 
-> ⚠️ 收款码仅用于向作者自愿赞赏。任何第三方以代下载、代部署、内部资源或会员群为由收费，均与作者无关，请停止付款并保留证据。
+---
 
-反馈问题时请删除令牌、昵称、账号 ID 和账单明细，再通过 [Issues](https://github.com/L0NE-6/ModelScope-Daily/issues) 提交；版本变化见 [Releases](https://github.com/L0NE-6/ModelScope-Daily/releases)。
+<a id="release"></a>
+## 📦 版本与发布
 
-## ✦ 星轨 Star Trail
+当前标签为 `v1.0.3`。发布前应确认 README、依赖、测试与 Release 资产一致，且不包含任何令牌或运行缓存。
 
-让每日签到沿着稳定轨道前行，每一次 Star 都是新的定位信号。
+### 📦 版本说明
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=L0NE-6/ModelScope-Daily&type=Date&theme=dark" />
-  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=L0NE-6/ModelScope-Daily&type=Date&theme=light" />
-  <img alt="ModelScope Daily Star Trail" src="https://api.star-history.com/svg?repos=L0NE-6/ModelScope-Daily&type=Date&theme=light" />
-</picture>
+当前发布版为 `v1.0.2`。该版本修复了 `401/403` 混淆和余额字段缺失误显示为 0 的问题。CHANGELOG 记录本轮新增 7 项离线回归、共 11 项测试通过；同时明确说明该轮没有使用真实账号发送真实签到请求。
+
+---
+
+<a id="disclaimer"></a>
+## ⚠️ 免责声明
+
+仓库内容用于账号持有人维护自身权益。使用前应确认账号、服务条款与所在地规则；作者不对账号限制、接口变化、网络失败或第三方部署造成的损失作出保证。
+
+完整展示与转载规则见 [NOTICE.md](NOTICE.md)。
+
+---
+
+<a id="donate"></a>
+## ☕ 赞赏码
+
+### 支持与投喂
+
+如果这个项目节省了你的时间，可以扫码支持维护。赞赏完全自愿，不影响代码、文档与 Issue 处理。
 
 <div align="center">
-
-[Releases](https://github.com/L0NE-6/ModelScope-Daily/releases) · [Issues](https://github.com/L0NE-6/ModelScope-Daily/issues) · [⭐ Star](https://github.com/L0NE-6/ModelScope-Daily)
-
+<table>
+<tr>
+<td align="center"><strong>微信赞赏码</strong><br /><img src="assets/donate-wechat.png" width="260" alt="微信赞赏码" /></td>
+<td align="center"><strong>支付宝赞赏码</strong><br /><img src="assets/donate-alipay.jpg" width="260" alt="支付宝赞赏码" /></td>
+</tr>
+</table>
 </div>
+
+---
+
+<a id="feedback"></a>
+## 💬 反馈与 Star History
+
+### 反馈与贡献
+
+- [提交 Issue](https://github.com/L0NE-6/ModelScope-Daily/issues)
+- [提交 Pull Request](https://github.com/L0NE-6/ModelScope-Daily/pulls)
+- [查看更新日志](CHANGELOG.md)
+
+反馈请附脱敏日志、复现步骤、运行环境与实际结果。不要贴 Token、Cookie、JWT、手机号或运行状态文件。
+
+<a href="https://star-history.com/#L0NE-6/ModelScope-Daily&Date">
+  <img src="https://api.star-history.com/svg?repos=L0NE-6/ModelScope-Daily&type=Date" alt="ModelScope-Daily Star History" />
+</a>

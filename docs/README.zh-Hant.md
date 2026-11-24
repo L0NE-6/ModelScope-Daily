@@ -23,7 +23,7 @@
 - 國內站讀取 `/openapi/v1/magicubes/transactions` 確認到帳。
 - 彙總當日 `daily_active` 與 `aliyun_bindlogin` 魔粒收入。
 - 回讀總額、可用、凍結魔粒與今日呼叫次數。
-- 相容大小寫兩套上游回應信封。
+- 相容大小寫兩套服務端回應信封。
 - 區分 HTTP `401` 登入失效與 HTTP `403` 風控攔截。
 
 ## 🧭 簽到方式
